@@ -73,7 +73,7 @@ const Weather = ({ temperatureUnit, setTemperatureUnit }) => {
   // Function to fetch forecast weekly data
   const fetchWeeklyForecastData = async (lat, lon) => {
     const response = await axios.get(
-        `https://pro.openweathermap.org/data/2.5/forecast/hourly?lat=${lat}&lon=${lon}&appid=${API_KEY}&cnt=15`
+        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&cnt=40`
     );
     return response.data; // Return the forecast data
   }; 

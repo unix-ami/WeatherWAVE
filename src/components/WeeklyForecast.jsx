@@ -2,27 +2,55 @@ import React from 'react';
 import { Line } from 'react-chartjs-2';
 
 const WeeklyForecast = ({ weeklyForecastData, convertTemperature, tempUnit }) => {
-  if (!weeklyForecastData) return null;
+  if (!weeklyForecastData?.list) return null;
 
   // Prepare data for the chart
-  const labels = weeklyForecastData.list.slice(1, 15).map((_, index) => {
-    const date = new Date();
-    date.setDate(date.getDate() + index + 1);
-    return date.toLocaleDateString('en-UK', { weekday: 'short' });
+  const dailyTemperatures = new Map();
+  weeklyForecastData.list.forEach((forecast) => {
+    const localDate = new Date(
+      (forecast.dt + weeklyForecastData.city.timezone) * 1000
+    ).toISOString().slice(0, 10);
+    const dailyTemperature = dailyTemperatures.get(localDate);
+    if (dailyTemperature) {
+      dailyTemperature.min = Math.min(dailyTemperature.min, forecast.main.temp_min);
+      dailyTemperature.max = Math.max(dailyTemperature.max, forecast.main.temp_max);
+    } else {
+      dailyTemperatures.set(localDate, {
+        min: forecast.main.temp_min,
+        max: forecast.main.temp_max,
+      });
+    }
   });
 
-  const temperatures = weeklyForecastData.list.slice(1, 15).map(day => 
-    Math.round(convertTemperature(day.main.temp - 273.15))
+  const forecastDays = Array.from(dailyTemperatures.entries());
+  const labels = forecastDays.map(([date]) =>
+    new Date(`${date}T12:00:00`).toLocaleDateString('en-GB', {
+      weekday: 'short',
+      day: 'numeric',
+    })
+  );
+  const dailyLows = forecastDays.map(([, temperatures]) =>
+    Math.round(convertTemperature(temperatures.min - 273.15))
+  );
+  const dailyHighs = forecastDays.map(([, temperatures]) =>
+    Math.round(convertTemperature(temperatures.max - 273.15))
   );
 
   const data = {
     labels,
     datasets: [
       {
-        label: `Temp (°${tempUnit})`,
-        data: temperatures,
-        borderColor: 'rgb(39, 77, 116)',
+        label: `Low (°${tempUnit})`,
+        data: dailyLows,
+        borderColor: 'rgb(75, 124, 155)',
         backgroundColor: 'rgb(75, 124, 155)',
+        tension: 0.4,
+      },
+      {
+        label: `High (°${tempUnit})`,
+        data: dailyHighs,
+        borderColor: 'rgb(39, 77, 116)',
+        backgroundColor: 'rgb(39, 77, 116)',
         tension: 0.4,
       },
     ],
@@ -58,7 +86,7 @@ const WeeklyForecast = ({ weeklyForecastData, convertTemperature, tempUnit }) =>
 
   return (
     <div className="tempForecast">
-      <h4>14-Day Temperature Forecast</h4>
+      <h4>5-Day Temperature Forecast</h4>
       <div className="box">
         <Line data={data} options={options} />
       </div>
