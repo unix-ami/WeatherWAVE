@@ -30,7 +30,6 @@ const Map = forwardRef((props, ref) => {
       };
 
       window.windyInit(options, (windyAPI) => {
-        const { map, store } = windyAPI;
         windyAPIRef.current = windyAPI;
         console.log('✅ Windy map initialized');
       });

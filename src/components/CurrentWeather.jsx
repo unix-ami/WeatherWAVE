@@ -3,11 +3,6 @@ import React from 'react';
 const CurrentWeather = ({ weatherData }) => {
   if (!weatherData) return null;
 
-  // Get the weather icon ID
-  const iconId = weatherData.weather[0].icon; // Assuming there's at least one weather object
-  const iconUrl = `http://openweathermap.org/img/wn/${iconId}@2x.png`; // Construct the icon URL
-  const iconDesc = weatherData.weather[0].description;
-
   return (
     <div>
       <h4>Weather Conditions</h4>

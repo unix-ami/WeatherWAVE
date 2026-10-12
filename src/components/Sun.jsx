@@ -22,9 +22,6 @@ const Sun = ({ sunriseUnix, sunsetUnix, uvi }) => {
 
   // Get the current time
   const currentUnix = Math.floor(Date.now() / 1000); // Convert milliseconds to seconds 
-  //Debug tests (passes)
-  const currentUnix2 = Math.floor(new Date(new Date().setHours(1, 0, 0, 0)).getTime() / 1000); //1AM
-  const currentUnix3 = Math.floor(new Date(new Date().setHours(21, 0, 0, 0)).getTime() / 1000); //9PM
 
   // Determine whether the current time is before sunrise, after sunrise but before sunset, or after sunset
   const isBeforeSunrise = currentUnix < sunriseUnix; // Before sunrise
@@ -75,7 +72,7 @@ const Sun = ({ sunriseUnix, sunsetUnix, uvi }) => {
 
           {/* Display UVI */}
           <p><strong>UVI:</strong> {uvi}</p>
-          <img src='./sunrise.png'></img>
+          <img src='./sunrise.png' alt="Sunrise" />
         </div>
       ) : (
         <p>Loading data...</p>

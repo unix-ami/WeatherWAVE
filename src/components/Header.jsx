@@ -3,7 +3,6 @@ import React from 'react';
 const Header = ({ weatherData, tempUnit, convertTemperature, speakForecast }) => {
   const iconId = weatherData.weather[0].icon;
   const iconUrl = `https://openweathermap.org/img/wn/${iconId}@4x.png`;
-  const iconDesc = weatherData.weather[0].description;
 
   // Function to determine pressure category and description
   const getPressureDescription = (pressure) => {

@@ -17,6 +17,8 @@ import SwellWarning from './components/SwellWarning';
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
+const API_KEY = process.env.REACT_APP_API_KEY;
+
 const Weather = ({ temperatureUnit, setTemperatureUnit }) => { 
 
   // states - using Southend-on-Sea for default values
@@ -33,9 +35,6 @@ const Weather = ({ temperatureUnit, setTemperatureUnit }) => {
   const [showSwellWarning, setShowSwellWarning] = useState(false);
   const googleMapsUrl = `https://www.google.co.uk/maps/place/${city}`;
 
-  //api key
-  const API_KEY = process.env.REACT_APP_API_KEY; 
-
   // temperature conversion
   const tempUnit = temperatureUnit; // Default to Celsius
 
@@ -47,44 +46,44 @@ const Weather = ({ temperatureUnit, setTemperatureUnit }) => {
   };
 
   // Function to fetch general weather data
-  const fetchWeatherData = async (city) => {
+  const fetchWeatherData = useCallback(async (city) => {
     const response = await axios.get(
       `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`
     );
     return response.data; // Return general weather data
-  };
+  }, []);
 
   // Function to fetch UV weather data
-  const fetchUVdata = async (lat, lon) => {
+  const fetchUVdata = useCallback(async (lat, lon) => {
     const response = await axios.get(
       `https://currentuvindex.com/api/v1/uvi?latitude=${lat}&longitude=${lon}`
     );
     return response.data; // Return current weather data
-  };
+  }, []);
 
   // Function to fetch hourly forecast data
-  const fetchHourlyForecastData = async (lat, lon) => {
+  const fetchHourlyForecastData = useCallback(async (lat, lon) => {
     const response = await axios.get(
         `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&cnt=24`
     );
     return response.data; // Return the forecast data
-  };
+  }, []);
 
   // Function to fetch forecast weekly data
-  const fetchWeeklyForecastData = async (lat, lon) => {
+  const fetchWeeklyForecastData = useCallback(async (lat, lon) => {
     const response = await axios.get(
         `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&cnt=40`
     );
     return response.data; // Return the forecast data
-  }; 
+  }, []);
 
-  const fetchMarineData = async (lat, lon) => {
+  const fetchMarineData = useCallback(async (lat, lon) => {
     //For testing
     // return 5.2;
     const marineUrl = `https://api.worldweatheronline.com/premium/v1/marine.ashx?key=543e5cc9746d460f975200404250104&q=${lat},${lon}&format=json`;
     const response = await axios.get(marineUrl);
     return response.data.data.weather[0].hourly[0].swellHeight_m; // Gets current hour swell height
-  };
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -137,7 +136,14 @@ const Weather = ({ temperatureUnit, setTemperatureUnit }) => {
     } catch (error) {
       console.error(error);
     }
-  }, [city]); // required dependencies
+  }, [
+    city,
+    fetchHourlyForecastData,
+    fetchMarineData,
+    fetchUVdata,
+    fetchWeatherData,
+    fetchWeeklyForecastData,
+  ]);
 
   useEffect(() => {
     if (offlineMode) {
@@ -222,7 +228,12 @@ const Weather = ({ temperatureUnit, setTemperatureUnit }) => {
     };
 
     getUserLocation();
-  }, []); // Run only once on component mount
+  }, [
+    fetchHourlyForecastData,
+    fetchMarineData,
+    fetchUVdata,
+    fetchWeeklyForecastData,
+  ]); // Run only once on component mount
   
   const handleInputChange = (e) => {
     setCity(e.target.value);

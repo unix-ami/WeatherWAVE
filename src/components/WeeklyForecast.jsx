@@ -2,13 +2,24 @@ import React from 'react';
 import { Line } from 'react-chartjs-2';
 
 const WeeklyForecast = ({ weeklyForecastData, convertTemperature, tempUnit }) => {
-  if (!weeklyForecastData?.list) return null;
+  if (!Array.isArray(weeklyForecastData?.list)) return null;
 
-  // Prepare data for the chart
   const dailyTemperatures = new Map();
+  const timezoneOffset = Number.isFinite(weeklyForecastData.city?.timezone)
+    ? weeklyForecastData.city.timezone
+    : 0;
+
   weeklyForecastData.list.forEach((forecast) => {
+    if (
+      !Number.isFinite(forecast?.dt) ||
+      !Number.isFinite(forecast.main?.temp_min) ||
+      !Number.isFinite(forecast.main?.temp_max)
+    ) {
+      return;
+    }
+
     const localDate = new Date(
-      (forecast.dt + weeklyForecastData.city.timezone) * 1000
+      (forecast.dt + timezoneOffset) * 1000
     ).toISOString().slice(0, 10);
     const dailyTemperature = dailyTemperatures.get(localDate);
     if (dailyTemperature) {
@@ -22,7 +33,9 @@ const WeeklyForecast = ({ weeklyForecastData, convertTemperature, tempUnit }) =>
     }
   });
 
-  const forecastDays = Array.from(dailyTemperatures.entries());
+  const forecastDays = Array.from(dailyTemperatures.entries()).slice(0, 5);
+  if (forecastDays.length === 0) return null;
+
   const labels = forecastDays.map(([date]) =>
     new Date(`${date}T12:00:00`).toLocaleDateString('en-GB', {
       weekday: 'short',
